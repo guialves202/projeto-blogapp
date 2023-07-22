@@ -6,13 +6,13 @@
     <div class="card mt-4">
         <div class="card-body">
             <h4>{{titulo}}</h4>
-            <h6>{{descricao}}</h6>
-            <small>Slug: {{slug}}</small><br>
+            <p>{{descricao}}</p>
+            <small>Categoria: {{categoria.nome}}</small><br>
             <small>Data de criação: {{data}}</small><br>
-            <a href="/admin/categorias/edit/{{_id}}"><button class="btn btn-success mt-4">Editar categoria</button></a>
-            <form action="/admin/categorias/deletar" method="POST">
+            <a href="/admin/postagens/edit/{{_id}}"><button class="btn btn-success mt-4">Editar postagem</button></a>
+            <form action="/admin/postagens/deletar" method="POST">
                 <input type="hidden" name="id" value="{{_id}}">
-                <button type="submit" class="btn btn-danger mt-2">Deletar categoria</button>
+                <button type="submit" class="btn btn-danger mt-2">Deletar postagem</button>
             </form>
         </div>
     </div>

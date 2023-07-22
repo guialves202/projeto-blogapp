@@ -8,7 +8,11 @@
     import mongoose from "mongoose";
     import session from "express-session";
     import flash from 'connect-flash';
-    // import mongoose from "mongoose";
+    import Postagem from "./models/Postagem.js";
+    import Categoria from "./models/Categoria.js";
+    import usuarios from './routes/usuario.js';
+    import passport from "passport";
+    import auth from "./config/auth.js";
 
     const app = express();
     const __filename = fileURLToPath(import.meta.url);
@@ -21,11 +25,15 @@
             resave: true,
             saveUninitialized: true
         }))
+        app.use(passport.initialize());
+        app.use(passport.session());
         app.use(flash());
     // Middleware
         app.use((req, res, next) => {
             res.locals.success_msg = req.flash('success_msg');
             res.locals.error_msg = req.flash('error_msg');
+            res.locals.error = req.flash('error');
+            res.locals.user = req.user || null;
             next();
         })
     // Body Parser
@@ -55,7 +63,63 @@
         app.use(express.static(path.join(__dirname, 'public')));
 // Rotas
     app.use('/admin', admin);
+    app.use('/usuarios', usuarios);
 
+    app.get('/', (req, res) => {
+        Postagem.find().lean().populate({path:'categoria', strictPopulate: false}).sort({data:'desc'}).then((postagem) => {
+            res.render('index', {postagem})
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro interno');
+            res.redirect('/404');
+        })
+        
+    })
+
+    app.get('/postagem/:slug', (req, res) => {
+        Postagem.findOne({slug: req.params.slug}).then((postagem) => {
+            if(postagem) {
+                res.render('postagem/index', {postagem})
+            } else {
+                req.flash('error_msg', 'Essa postagem não existe');
+                res.redirect('/')
+            }
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro interno');
+            res.redirect('/');
+        })
+    })
+
+    app.get('/categorias', (req, res) => {
+        Categoria.find().then((categoria) => {
+            res.render('categorias/index', {categoria})
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro interno ao listar as categorias');
+            res.redirect('/')
+        })
+    })
+
+    app.get('/categorias/:slug', (req, res) => {
+        Categoria.findOne({slug: req.params.slug}).then((categoria) => {
+            if(categoria) {
+                Postagem.find({categoria: categoria._id}).then((postagem) => {
+                    res.render('categorias/postagens', {postagem, categoria});
+                }).catch((err) => {
+                    req.flash('error_msg', 'Houve um erro ao listar os posts');
+                    res.redirect('/');
+                })
+            } else {
+                req.flash('error_msg', 'Esta categoria não existe');
+                res.redirect('/')
+            }
+        }).catch((err) => {
+            req.flash('error_msg', 'Houve um erro interno ao carregar a página desta categoria');
+            res.redirect('/')
+        })
+    })
+
+    app.get('/404', (req, res) => {
+        res.send('Erro 404!')
+    })
 
 // Outros
 const PORT = 3000;

@@ -1,0 +1,22 @@
+<style>
+    .category {
+        text-decoration: none;
+    }
+</style>
+
+<h4>Categorias:</h4>
+
+{{#each categoria}}
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <a href="/categorias/{{slug}}" class="category">
+                <h5>{{nome}}</h5>
+            </a>
+        </div>
+    </div>
+    
+
+{{else}}
+
+{{/each}}
